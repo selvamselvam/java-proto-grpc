@@ -39,24 +39,21 @@ public class HelloWorldServer extends GreeterGrpc.GreeterImplBase{
                 .build()
                 .start();
         logger.info("Server started, listening on " + port);
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                // Use stderr here since the logger may have been reset by its JVM shutdown hook.
-                System.err.println("*** shutting down gRPC server since JVM is shutting down");
-                try {
-                    HelloWorldServer.this.stop();
-                } catch (InterruptedException e) {
-                    if (server != null) {
-                        server.shutdownNow();
-                    }
-                    e.printStackTrace(System.err);
-                } finally {
-                    executor.shutdown();
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            // Use stderr here since the logger may have been reset by its JVM shutdown hook.
+            System.err.println("*** shutting down gRPC server since JVM is shutting down");
+            try {
+                HelloWorldServer.this.stop();
+            } catch (InterruptedException e) {
+                if (server != null) {
+                    server.shutdownNow();
                 }
-                System.err.println("*** server shut down");
+                e.printStackTrace(System.err);
+            } finally {
+                executor.shutdown();
             }
-        });
+            System.err.println("*** server shut down");
+        }));
     }
 
     private void stop() throws InterruptedException {
